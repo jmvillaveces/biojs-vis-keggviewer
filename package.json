@@ -1,7 +1,7 @@
 {
   "name": "biojs-vis-keggviewer",
   "description": "renders a KEGGML file and displays a KEGG pathway",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "homepage": "https://github.com/jmVillaveces/biojs-vis-keggviewer",
   "author": {
     "name": "José Villaveces",
