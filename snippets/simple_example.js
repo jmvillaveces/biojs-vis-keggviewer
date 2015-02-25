@@ -26,4 +26,4 @@ var proxy = function(url){
     return 'https://cors-anywhere.herokuapp.com/'+url;
 };
         
-biojsviskegg.pathway('hsa04910').proxy(proxy).expression(expression).target('#rootDiv').init(); 
+biojsviskegg.pathway('hsa04910').proxy(proxy).expression(expression).target(rootDiv).init();
