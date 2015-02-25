@@ -1,1 +1,2 @@
-module.exports = require("./lib/keggviewer");
+biojsviskegg = require('./js/app.js');
+module.exports = biojsviskegg;
