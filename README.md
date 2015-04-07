@@ -42,6 +42,9 @@ var proxy = function(url){
 biojsviskegg.pathway('hsa04910').proxy(proxy).expression(expression).target(rootDiv).init(); // Initialize component
 ```
 
+## Cite
+If you use Keggviewer please cite the article [here](http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3954160/).
+
 ## Contributing
 
 Please submit all issues and pull requests to the [jmVillaveces/biojs-vis-keggviewer](http://github.com/jmVillaveces/biojs-vis-keggviewer) repository!
