@@ -143,14 +143,16 @@ var renderPathway = function(data, target){
                 'content': 'data(name)',
                 'text-valign': 'center',
                 'width':  'data(width)',
-                /*'height':  'data(height)',*/
+                'height':  'data(height)',
                 'shape':'data(shape)',
                 'background-color': 'data(bkg_color)',
                 'text-valign': 'data(text_valign)',
                 /*'opacity': 'data(opacity)',*/
                 'border-color': '#000000',
                 'border-width': 'data(border-width)',
-                'font-size': 11
+                'font-size': 11,
+                'text-wrap': 'wrap',
+                'text-max-width': 'data(width)'
             })
             .selector('node')
             .selector('edge').css({
@@ -159,7 +161,8 @@ var renderPathway = function(data, target){
                 'line-style': 'data(line_style)',
                 'line-color':'#000000',
                 'target-arrow-color':'#000000',
-                'text-valign' : 'bottom'
+                'text-valign' : 'bottom',
+                
             }),
         layout: {
             name: "preset",
