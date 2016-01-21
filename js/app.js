@@ -1,6 +1,5 @@
 //Libraries
 var $ = require('jquery');
-var cytoscape = require('cytoscape');
 
 // load all ui everything 
 require('jquery-ui');
