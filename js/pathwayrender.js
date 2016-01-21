@@ -162,7 +162,7 @@ var renderPathway = function(data, target){
                 'line-color':'#000000',
                 'target-arrow-color':'#000000',
                 'text-valign' : 'bottom',
-                
+                'font-size': 11
             }),
         layout: {
             name: "preset",
