@@ -1,5 +1,6 @@
 //Libraries
 var $ = require('jquery');
+var cytoscape = require('cytoscape');
 
 var renderPathway = function(data, target){
     
