@@ -1,4 +1,5 @@
 //Libraries
+var xhr = require('nets');
 var $ = require('jquery');
 
 // load all ui everything 
@@ -15,23 +16,29 @@ var _target = null, _pathway = 'hsa04910', _proxy = null, _expression = null, _c
 var _query = function(){
     
     var url = _KEGGAPI+_pathway+'/kgml';
-    url = ($.isFunction(_proxy)) ? _proxy(url) : url;
+    url = (typeof _proxy === 'function') ? _proxy(url) : url;
     
-    $.ajax({
-        dataType: 'xml',
+    xhr({
         url: url,
-        success: function(xml){
-            
-            // Create container div
-            var div = _target[0].appendChild(document.createElement('div'));
-                div.style.left = 0;
-                div.style.top = 0;
-                div.style.width = "100%";
-                div.style.height = "100%";
-                div.style.position = "absolute";
-            
-            _cy = render(xml, div);
+        method: 'GET',
+        encoding: undefined
+    }, 
+    function(err, resp, body){
+        
+        if(err){ 
+            console.error(err); 
+            return;
         }
+        
+        // Create container div
+        var div = _target[0].appendChild(document.createElement('div'));
+            div.style.left = 0;
+            div.style.top = 0;
+            div.style.width = '100%';
+            div.style.height = '100%';
+            div.style.position = 'absolute';
+        
+        _cy = render(resp.rawRequest.responseXML, div);
     });
 };
 
@@ -40,7 +47,7 @@ var _clearExpression = function(){
     for(var j=0; j<nodes.length; j++){
         for(var k=0; k<_expression.genes.length; k++){
             if(nodes[j].data().keggId == _expression.genes[k]){
-                nodes[j].css("background-color", nodes[j].data().bkg_color);
+                nodes[j].css('background-color', nodes[j].data().bkg_color);
             }
         }
     }
@@ -218,7 +225,7 @@ app.expression = function(_){
 };
 
 app.init = function(){
-    if(_expression !== null) _initControlBar();
+    //if(_expression !== null) _initControlBar();
     _query();
 };
 

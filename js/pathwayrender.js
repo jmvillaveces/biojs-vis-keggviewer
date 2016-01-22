@@ -35,7 +35,8 @@ function _processEntry(entry){
     }else if(type == 'map'){
         node.shape = 'roundrectangle';
         node.bkg_color = '#00bfff';
-    }else if( type == 'group'){    
+    }else if( type == 'group'){
+        
         var components = entry.getElementsByTagName('component');
         for(var i = 0; i < components.length; i++){
             node_map[components[i].getAttribute('id')].data.parent = node.id;
