@@ -1,9 +1,6 @@
 //Libraries
 var xhr = require('nets');
-var $ = require('jquery');
-
-// load all ui everything 
-require('jquery-ui');
+var Slider = require("bootstrap-slider");
 
 //Modules
 var render = require('./pathwayrender.js');
@@ -11,7 +8,23 @@ var render = require('./pathwayrender.js');
 //Private members
 var _KEGGAPI = 'http://rest.kegg.jp/get/';
 
-var _target = null, _pathway = 'hsa04910', _proxy = null, _expression = null, _cy = null, _conditions = null, _interval = null;
+var _target = null, _pathway = 'hsa04910', _proxy = null, _expression = null, _cy = null, _conditions = null, _interval = null, _slider = null;
+
+var _finder = function(cmp, arr){
+    var y = arr[0] || null;
+    for(var i = 1; i < arr.length; i++){
+        y = cmp(y, arr[i]);
+    }
+    return y;
+};
+
+var _setBackground = function(el, bkg){
+    
+    el.setAttribute('style', 'background:'+bkg);
+    
+    var content = el.innerHTML;
+    container.innerHTML= content;
+};
 
 var _query = function(){
     
@@ -31,7 +44,7 @@ var _query = function(){
         }
         
         // Create container div
-        var div = _target[0].appendChild(document.createElement('div'));
+        var div = _target.appendChild(document.createElement('div'));
             div.style.left = 0;
             div.style.top = 0;
             div.style.width = '100%';
@@ -53,143 +66,141 @@ var _clearExpression = function(){
     }
 };
 
-var _paintExpression = function(){
+var _paintExpression = function(condition){
     
-    if($('#condition').val() == 'nocondition') _clearExpression();
+    
+    if(condition.name == 'no condition'){ 
+        _clearExpression();
+        return;
+    }
+    
+    var slider = _slider.getValue();
         
-    var min = $("#slider-range").slider("values", 0);
-    var max = $("#slider-range").slider("values", 1);
+    var min = slider[0];
+    var max = slider[1];
+    
+    var nodes = _cy.nodes();
+    for(var i = 0; i < _expression.genes.length; i++){
+        
+        var node = nodes.filterFn(function(ele){
             
-    var condition = {};
-    for(var i=0; i<_expression.conditions.length; i++){
-        if(_expression.conditions[i].name == $('#condition').val()){
-            condition = _expression.conditions[i];    
-                    
-            var nodes = _cy.nodes();
-            for(var j=0; j<nodes.length; j++){
-                for(var k=0; k<_expression.genes.length; k++){
-                        
-                    var inArray = $.inArray(_expression.genes[k], nodes[j].data().keggId );
-                    if(inArray != -1){
-                                
-                        var exp = condition.values[k];
-                        var color = nodes[j].data().bkg_color;
-                        if(exp < min){
-                            color = _expression.downColor;
-                        }else if(exp > max){
-                            color = _expression.upColor;
-                        }
-                        nodes[j].css("background-color", color);
-                    }
-                }
+            var ids = ele.data().keggId;
+            for(var j = 0; j < ids.length; j++){
+                
+                if(ids[j].toLowerCase() === _expression.genes[i].toLowerCase()) return true;
+                
             }
-            break;
+            return false;
+        });
+                
+        if(node.length !== 0){
+            
+            var exp = condition.values[i];
+            var color = node.data().bkg_color;
+            
+            if(exp < min){
+                color = _expression.downColor;
+            }else if(exp > max){
+                color = _expression.upColor;
+            }
+            node.css('background-color', color);
         }
-    }  
+    }
 };
 
 var _initControlBar = function(){
     
-    var cond = '<option value="nocondition">No Condition</option>';
-    _expression.conditions.forEach(function(e, i){
-        cond+='<option value="'+e.name+'">'+e.name+'</option>';
-    });
+    var min = Number.POSITIVE_INFINITY, max = Number.NEGATIVE_INFINITY;
     
-    $('<div id="toolbar" style="position:relative;z-index:999999;top:20px;float:right;font-size:0.8em"><select id="condition">'+cond+'</select><button id="play">play</button><button       id="refresh">refresh</button><p><label for="amount">Expression range:</label><label id="amount" style=" color: #f6931f; font-weight: bold;margin-left:10px;"></label></p><div id="slider-range"></div></div>').appendTo(_target);
+    var toolbar = document.createElement('div');
+    toolbar.setAttribute('style', 'position:relative;z-index:999999;top:20px;float:right;font-size:0.8em;margin-right: 20px;');
+    toolbar.setAttribute('class', 'well form-group');
     
-    $( "#play" ).button({
-        text: false,
-        icons: {
-            primary: "ui-icon-play"
-        }
-    }).click(function() {
-        var options;
-        if ( $(this).text() === "play" ) {
-            options = {
-                label: "stop",
-                icons: {
-                    primary: "ui-icon-stop"
-                }
-            };
-            $("#refresh").button("disable");
-        
-                _interval = setInterval(function(){
-                    
-                    _conditions = $("#condition > option");
-                    var selected = $('#condition').val();
-
-                    var index;
-                    for(var i=0; i<_conditions.length; i++){
-                        if($(_conditions[i]).val() == selected){
-                            index = i;
-                            break;
-                        }
-                    }
-                   
-                    if(index === _conditions.length - 1){
-                        $('#condition').val($(_conditions[0]).val());
-                    }else{
-                        $('#condition').val($(_conditions[index+1]).val());
-                    }
-                    _paintExpression();
-                }, 2000);
-                
-        }else{
-            options = {
-                label: "play",
-                icons: {
-                    primary: "ui-icon-play"
-                }
-            };
-            $( "#refresh" ).button("enable");
-            window.clearInterval(_interval);
-        }
-        $(this).button( "option", options );
-    });
-        
-    $( "#refresh" ).button({
-        text: false,
-        icons: {
-            primary: "ui-icon-refresh"
-        }
-    }).click(function() {
-        _paintExpression();
-    });
+    /*Select*/
+    var select = document.createElement('select');
+    select.setAttribute('class', 'form-control');
     
-    var min, max;
+    _expression.conditions.unshift({name : 'no condition'});
+    
+    
     for(var i=0; i<_expression.conditions.length; i++){
-        var condition = _expression.conditions[i];
-        for(var j=0; j<condition.values.length; j++){
-            var val = condition.values[j];
-            
-            if(min == undefined && max == undefined){
-                min = val;
-                max = val;
-            }else if(val<min){
-                min = val;
-            }else if(val>max){
-                max = val;
-            }
+        var e = _expression.conditions[i];
+        var opt = document.createElement('option');
+        opt.setAttribute('value', e.name);
+        opt.text = e.name;
+        
+        select.appendChild(opt);
+        
+        if(e.values){
+            max = Math.max(max, _finder(Math.max, e.values));
+            min = Math.min(min, _finder(Math.min, e.values));
         }
     }
     
-    _expression.min = min;
-    _expression.max = max;
-        
-    $( "#slider-range" ).slider({
-        range: true,
-        min: min,
-        max: max,
-        step: 0.01,
-        slide: function( event, ui ) {
-            $( "#amount" ).text(ui.values[ 0 ] + " , " + ui.values[ 1 ] );
-        }
+    /*On Change Event*/
+    select.addEventListener('change', function(){
+        _paintExpression(_expression.conditions[select.selectedIndex]);
     });
     
-    $("#amount").text($("#slider-range").slider("values", 0) +" , " + $("#slider-range").slider("values", 1));
+    /* Play Button */
+    var span = document.createElement('span');
+    span.setAttribute('class', 'glyphicon glyphicon-play');
+    span.setAttribute('aria-hidden', 'true');
+    
+    
+    var playBtn = document.createElement('button');
+    playBtn.setAttribute('type', 'button');
+    playBtn.setAttribute('class', 'btn btn-default btn-sm form-control');
+    playBtn.setAttribute('style', 'margin-top:5px;margin-bottom:5px;');
+    playBtn.appendChild(span);
+    
+    /*On Click Event*/
+    playBtn.addEventListener('click', function(e){
         
-    $('#condition').change(function(){
-        //self._paintExpression(self);
+        
+        if(span.className.lastIndexOf('glyphicon-play') != -1){
+            
+            //Play
+            span.className = span.className.replace('glyphicon-play' , 'glyphicon-stop' );
+            
+            _interval = setInterval(function(){
+                
+                select.selectedIndex = (select.selectedIndex === select.length - 1) ? 0 : select.selectedIndex + 1;
+                _paintExpression(_expression.conditions[select.selectedIndex]);
+            
+            }, 2000);
+            
+            
+        }else{
+            //Stop
+            span.className = span.className.replace('glyphicon-stop' , 'glyphicon-play' );
+            window.clearInterval(_interval);
+        }
+        
+    });
+    
+    /* Slider Input */
+    var input = document.createElement('input');
+    input.setAttribute('id', 'sl');
+    input.setAttribute('class', 'slider');
+    
+    /* Slider Style */
+    var style = document.createElement('style');
+    style.innerHTML = '.slider-track-high { background: '+ _expression.upColor +';} .slider-track-low { background: '+ _expression.downColor +';}';
+    document.getElementsByTagName('head')[0].appendChild(style);
+    
+    toolbar.appendChild(select);
+    toolbar.appendChild(playBtn);
+    toolbar.appendChild(input);
+    
+    _target.appendChild(toolbar);
+    
+    var cut = (max - min)/4;
+    
+    //Init slider
+    _slider = new Slider('#sl', {min  : min, max  : max, value: [ min + cut, max - cut ], step:0.01});
+    _slider.on('slideStop', function(e){
+        _paintExpression(_expression.conditions[select.selectedIndex]);
     });
 };
 
@@ -199,7 +210,7 @@ var app = function(){};
 app.target = function(_){
     if (!arguments.length)
         return _target;
-    _target = $(_);
+    _target = document.querySelector(_);
     return app;
 };
 
@@ -225,7 +236,7 @@ app.expression = function(_){
 };
 
 app.init = function(){
-    //if(_expression !== null) _initControlBar();
+    if(_expression !== null) _initControlBar();
     _query();
 };
 
