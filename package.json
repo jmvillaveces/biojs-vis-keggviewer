@@ -61,12 +61,11 @@
   },
   "sniper": {
     "js": [
-      "https://code.jquery.com/jquery-2.2.0.min.js",
-      "https://code.jquery.com/ui/1.11.2/jquery-ui.min.js",
       "/build/biojsviskeggviewer.js"
     ],
     "css": [
-      "/css/jquery-ui.css"
+      "/dependencies/css/bootstrap-slider.css",
+      "/dependencies/css/bootstrap.min.css"
     ],
     "snippets": [
       "snippets"
