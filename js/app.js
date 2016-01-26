@@ -210,7 +210,7 @@ var app = function(){};
 app.target = function(_){
     if (!arguments.length)
         return _target;
-    _target = document.querySelector(_);
+    _target = _;
     return app;
 };
 
