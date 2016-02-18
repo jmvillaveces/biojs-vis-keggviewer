@@ -3,7 +3,7 @@
 [![NPM version](http://img.shields.io/npm/v/biojs-vis-keggviewer.svg)](https://www.npmjs.org/package/biojs-vis-keggviewer)
 
 ## About
-KEGGViewer is a [BioJS](http://biojs.io) component to visualize [KEGG](http://www.genome.jp/kegg/) pathways and to allow their visual integration with functional data. Click [here](http://biojs.io/d/biojs-vis-keggviewer) to see a working example!
+KEGGViewer is a [BioJS](http://biojs.io) component to visualize [KEGG](http://www.genome.jp/kegg/) pathways and to allow their visual integration with functional data. Click [here](http://codepen.io/secevalliv/pen/QyRLyM) or [here](http://biojs.io/d/biojs-vis-keggviewer) to see a working example!
 
 ## Getting Started
 Install it using npm: `npm install biojs-vis-keggviewer`
